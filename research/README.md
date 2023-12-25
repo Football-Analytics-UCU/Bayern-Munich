@@ -5,7 +5,7 @@ Each notebook is some research that was done by player Bayern Ukraine.
 - [Kloppy+Mplsoccer](https://github.com/Football-Analytics-UCU/Bayern-Munich/blob/main/research/pi_kloppy_mplsoccer.ipynb) - a short overview of Kloppy (a couple of viz with Mlpsoccer), by PI
 - [Soccerdata](ms_soccerdata.ipynb) - a short overview of Soccerdata, by MS
 
-## Library collections
+## Library collections:
 
 - [pysport](https://docs.google.com/spreadsheets/d/1xxafbDDwJKa1-rNfwkFz26i32aStEBiW6RwlCm-NF-4/edit?usp=sharing)- libraries from the [opensource.pysport.org](https://opensource.pysport.org/) website
 
