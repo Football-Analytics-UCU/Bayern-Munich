@@ -15,3 +15,4 @@ Each notebook is some research that was done by player Bayern Ukraine.
 - [StatsBomb Open Data](https://github.com/statsbomb/open-data/tree/master) - contains open data from [StatsBomb](https://statsbomb.com/what-we-do/hub/free-data/)
 - [Statsbombpy](https://github.com/statsbomb/statsbombpy/tree/master) - access to StatsBomb open data through API
 - [pysport](https://docs.google.com/spreadsheets/d/1xxafbDDwJKa1-rNfwkFz26i32aStEBiW6RwlCm-NF-4/edit?usp=sharing)- libraries from the [opensource.pysport.org](https://opensource.pysport.org/)
+- [floodlight](https://floodlight.readthedocs.io/en/latest/#) - Python package for streamlined analysis of sports data
