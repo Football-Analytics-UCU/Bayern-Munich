@@ -5,6 +5,8 @@ Each notebook is some research that was done by player Bayern Ukraine.
 - [Kloppy+Mplsoccer](pi_kloppy_mplsoccer.ipynb) - a short overview of Kloppy (a couple of viz with Mlpsoccer), by PI
 - [Soccerdata](ms_soccerdata.ipynb) - a short overview of Soccerdata, by MS
 - [Statsbombpy](pi_statsbombpy.ipynb) - a short overview how to use Statsbombpy, by PI
+- [floodlight](floodlight.ipynb - an example of floodlight tracking data analysis on handball dataset, by OB
+- [Mplsoccer](ob_mplsoccer_statsbomb_euro.ipynb) - statsbomb data extraction + goal plot, by OB
 
 ### Links:
 
