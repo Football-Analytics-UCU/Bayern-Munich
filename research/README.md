@@ -7,8 +7,8 @@ Each notebook is some research that was done by player Bayern Ukraine.
 - [Statsbombpy](pi_statsbombpy.ipynb) - a short overview how to use Statsbombpy, by PI
 - [floodlight](floodlight.ipynb) - an example of floodlight tracking data analysis on handball dataset, by OB
 - [Mplsoccer](ob_mplsoccer_statsbomb_euro.ipynb) - statsbomb data extraction + goal plot, by O
-- [codeball](codeball.ipynb) - a codeball overview, by PR
-- [tyrone_mings](tyrone_mings.ipynb) - a tyrone_mings overview, by PR
+- [codeball](rp_codeball.ipynb) - a codeball overview, by RP
+- [tyrone_mings](rp_tyrone_mings.ipynb) - a tyrone_mings overview, by RP
 ### Links:
 
 - [kloppy](https://github.com/PySport/kloppy), [doc](https://kloppy.pysport.org) - python library for getting data from different vendors - events data (statsbomb), tracking data, broadcast data (9 matches)
