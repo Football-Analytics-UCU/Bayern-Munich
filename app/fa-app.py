@@ -12,7 +12,7 @@ def plot_heatmap(df):
 
 st.set_page_config(page_title='bayern-project', layout="wide")
 
-path_data_events = "events.csv"
+path_data_events = "data/events.csv"
 df_events = pd.read_csv(path_data_events)
 
 _, col01, _ = st.columns((1, 1, 1))
