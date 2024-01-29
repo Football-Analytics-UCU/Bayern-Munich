@@ -1,15 +1,34 @@
+import warnings
+warnings.filterwarnings('ignore')
+
 import streamlit as st
 import pandas as pd
-from helper_passes import (get_passes_data, filter_passes_data, plot_pass_map, plot_pass_heatmap)
+
+from helper_passes import get_passes_data, filter_passes_data, plot_pass_map, create_pass_heatmap, plot_hulls
+from mplsoccer.pitch import Pitch, VerticalPitch
+import matplotlib.pyplot as plt
+from statsbombpy import sb
+import numpy as np
+import seaborn as sns
+
+from mplsoccer import Sbopen
+from matplotlib.patches import Arc
 
 st.set_page_config(page_title='bayern-project', layout="wide")
 
 # path_data_events = "app/data/events.csv"
-# df_events = pd.read_csv(path_data_events)
+# df_ev = pd.read_csv(path_data_events)
 
 path_data_events = "app/data/events.pkl"
 df_events = pd.read_pickle(path_data_events)
 
+ev = df_events[['minute', 'second', 'team', 'location', 'type', 'player', 'pass_end_location', 'pass_outcome']]
+ev_ukr = ev[ev['team'] == 'Ukraine']
+ev_nth = ev[ev['team'] != 'Ukraine']
+
+event_id = 3788746
+lineups_nth = sb.lineups(match_id=event_id)["Netherlands"]
+lineups_ukr = sb.lineups(match_id=event_id)["Ukraine"]
 
 _, col01, _ = st.columns((1, 1, 1))
 with col01:
@@ -62,7 +81,7 @@ with tab2:
                     'max_passes_direction': df_player_pass['passes'].max() if not df_player_pass.empty else 0,
                     'min_passes_direction': df_player_pass['passes'].min() if not df_player_pass.empty else 0,
                     },
-                'period_start': period_start, 
+                'period_start': period_start,
                 'period_end': period_end,
                 'color': config_color_dict[idx_team]['color'],
                 'cmap': config_color_dict[idx_team]['cmap'],
@@ -70,9 +89,6 @@ with tab2:
         config_dict[team] = idx_list
 
     for k in config_dict.keys():
-        # st.write(k, len(config_dict[k]))
-        # st.write(config_dict[k])
-
         num_cols = len(config_dict[k])
         cols = st.columns(num_cols)
 
@@ -97,9 +113,23 @@ with tab2:
         aggfunc='count'
     )
 
-    _, col02 = st.columns((1, 1))
+    _, col01, _ = st.columns((0.2, 1, 0.2))
+    with col01:
+        plot_hulls(ev_ukr, lineups_ukr, 'Ukraine', main_color='dodgerblue')
+
+    _, col01, _ = st.columns((0.2, 1, 0.2))
+    with col01:
+        plot_hulls(ev_nth, lineups_nth, 'Netherlands', main_color='orange')
+    
+    _, col01, _ = st.columns((0.2, 1, 0.2))
+    with col01:
+        sel_clusters = st.slider('Number of clusters:', min_value=10, max_value=150, value=90, step=1)
+    col01, col02 = st.columns((1, 1))
+    
+    with col01:
+        create_pass_heatmap(ev_ukr, 'Ukraine', sel_clusters)
     with col02:
-        plot_pass_heatmap(df_pass)
+        create_pass_heatmap(ev_nth, 'Netherlands', sel_clusters)
 
 
 with tab3:
