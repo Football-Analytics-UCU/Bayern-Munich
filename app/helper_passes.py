@@ -5,9 +5,9 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as pe
-from mplsoccer.pitch import VerticalPitch
 from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.patches import FancyArrowPatch
+from mplsoccer.pitch import VerticalPitch
 
 
 def get_passes_data(df_events, team, minute_start, minute_end):
