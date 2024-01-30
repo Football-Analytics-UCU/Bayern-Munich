@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from helper_passes import (get_passes_data, filter_passes_data, plot_pass_map, plot_pass_heatmap)
-from tabs.general import create_general_tab
+from helper_general import create_general_tab
 
 st.set_page_config(page_title='bayern-project', layout="wide")
 
