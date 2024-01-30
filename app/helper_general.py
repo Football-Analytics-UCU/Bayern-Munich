@@ -2,8 +2,18 @@ import streamlit as st
 import pandas as pd
 
 
+def get_binary_chart_wrapper(data, title, *args, **kwargs):
+
+    return get_binary_chart(data[title]['Netherlands'], data[title]['Ukraine'], title, *args, **kwargs)
+
+
 def get_binary_chart(nth, ukr, title, format="%"):
     is_zero = not (nth or ukr)
+
+    if format == "%" and not is_zero:
+        total_sum = nth + ukr
+        nth /= total_sum
+        ukr /= total_sum
 
     st.header(title)
 
@@ -29,8 +39,6 @@ def get_binary_chart(nth, ukr, title, format="%"):
                 color='white'
             )
 
-    #ax.set_title(title)
-
     fig = ax.get_figure()
     fig.patch.set_alpha(0.0)
     ax.patch.set_alpha(0.0)
@@ -38,14 +46,23 @@ def get_binary_chart(nth, ukr, title, format="%"):
     return fig
 
 
+def get_data(df_events):
+    res_df = df_events.groupby('team').agg({'possession': "sum"}).rename(columns={'possession': 'Possession'})
+
+    return res_df
+
+
+
 def create_general_tab(df_events):
+
+    data = get_data(df_events)
 
     st.title("Performance")
 
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            st.pyplot(get_binary_chart(0.63, 0.37, "Possession", format='%'))
+            st.pyplot(get_binary_chart_wrapper(data, "Possession", format='%'))
         with col2:
             st.pyplot(get_binary_chart(688, 424, "Passes attempted", format='N'))
 
