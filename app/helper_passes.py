@@ -10,13 +10,10 @@ from matplotlib.patches import FancyArrowPatch
 from mplsoccer.pitch import VerticalPitch
 
 
-def get_passes_data(df_events, team, minute_start, minute_end):
+def get_passes_data(df_events, minute_start, minute_end):
     """
     """
     df_events_temp = df_events[
-        (df_events['type']=='Pass')&
-        (df_events['pass_outcome'].isna())&
-        (df_events['team']==team)&
         (df_events['minute']>minute_start)&
         (df_events['minute']<=minute_end)
     ].copy().reset_index(drop=True)
@@ -45,6 +42,63 @@ def get_passes_data(df_events, team, minute_start, minute_end):
     df_player_pass.drop('player_y', axis=1, inplace=True)
 
     return df_player_pass, df_player_location
+
+def get_passes_player_data(df_events_temp):
+    """
+    """
+    df_events_temp[['pass_start_x', 'pass_start_y']] = pd.DataFrame(
+        df_events_temp["location"].values.tolist(), index=df_events_temp.index)
+    df_events_temp[['pass_end_x', 'pass_end_y']] = pd.DataFrame(
+        df_events_temp["pass_end_location"].tolist(), index=df_events_temp.index)
+    
+    # passes from player
+    df_player_location_start = df_events_temp.groupby(['player']).agg(
+        x=('pass_start_x', 'mean'), 
+        y=('pass_start_y', 'mean'),
+        passes=('pass_start_x', 'size')
+    ).reset_index()   
+    # passes to player
+    df_player_location_end = df_events_temp.groupby(['pass_recipient']).agg(
+        x=('pass_end_x', 'mean'), 
+        y=('pass_end_y', 'mean'),
+        passes=('pass_end_x', 'size')
+    ).reset_index().rename(columns={'pass_recipient': 'player'})
+
+    df_player_location = pd.concat([df_player_location_start, df_player_location_end], axis=0)\
+                           .sort_values("passes", ascending=True) 
+    
+    df_player_pass = df_events_temp.groupby(['player', 'pass_recipient'])\
+                                   .agg(passes=('pass_start_x', 'size')).reset_index()
+    
+    df_player_pass = df_player_pass.merge(
+        df_player_location[['player', 'x', 'y']], left_on='player', right_on='player'
+    ).rename(columns={'x': 'passer_x', 'y': 'passer_y'})\
+                                   .merge(
+        df_player_location[['player', 'x', 'y']], left_on='pass_recipient', right_on='player'
+    ).rename(columns={'x': 'recipient_x', 'y': 'recipient_y', 'player_x': 'player'})\
+                                   .sort_values("passes", ascending=True)
+    df_player_pass.drop('player_y', axis=1, inplace=True)
+
+    return df_player_pass, df_player_location
+
+def create_substitution_data(df_events_team, df_event_substitution):
+    """
+    """
+    df_sub = df_events_team.groupby('player')['id'].count().reset_index()\
+                            .merge(df_event_substitution, 
+                                   left_on='player',
+                                   right_on='player', 
+                                   how='left')\
+                            .merge(df_event_substitution[['substitution_replacement', 'player', 'minute']], 
+                                   left_on='player',
+                                   right_on='substitution_replacement', 
+                                   how='left')\
+                            .sort_values('id', ascending=False)\
+                            .rename(columns={'id': 'num_passes', 'minute_x': 'end', 'minute_y': 'start'})
+    df_sub['end'] = df_sub['end'].fillna('Game Over')
+    df_sub['start'] = df_sub['start'].fillna('Game Start')
+
+    return df_sub
 
 def filter_passes_data(df_player_pass, df_player_location, min_pass_count=2):
     """
@@ -106,7 +160,7 @@ def add_arrow(x1, y1, x2, y2, ax, text_label, **kwargs):
     )
     return annotation
 
-def plot_pass_map(df_player_pass, df_location, team_name, metric, period_start, period_end, color, cmap_name):
+def plot_pass_map(df_player_pass, df_location, title, sub_title, metric, color, cmap_name):
     """
     Create a passmap for a single team 
     """
@@ -177,23 +231,23 @@ def plot_pass_map(df_player_pass, df_location, team_name, metric, period_start, 
             texts.append(text)
             LABEL = False
 
-        # drow annotations: title, subtitle
-        title = ax.text(0, 130, 
-            team_name, 
-            color=color,
-            fontsize=24, 
-            va='top')
-        ax.text(0, 124, 
-            f"Passes from minute {period_start['minute']+1}-{period_end['minute']} ({period_start['type']} - {period_end['type']})",
-            fontsize=12, 
-            va='top')
-        # ax.text(1, 10, f"Min Passes: {metric['min_passes']}", fontsize=12, va='top', ha='left')
+    # drow annotations: title, subtitle
+    title = ax.text(0, 130, 
+        title, 
+        color=color,
+        fontsize=24, 
+        va='top')
+    ax.text(0, 124, 
+        sub_title,
+        fontsize=12, 
+        va='top')
 
-        title.set_path_effects([
-            pe.PathPatchEffect(offset=(1, -1), hatch='xxxx', facecolor='black'),
-            pe.PathPatchEffect(edgecolor='black', linewidth=.8, facecolor=color)
-        ])
+    title.set_path_effects([
+        pe.PathPatchEffect(offset=(1, -1), hatch='xxxx', facecolor='black'),
+        pe.PathPatchEffect(edgecolor='black', linewidth=.8, facecolor=color)
+    ])
 
+    if not df_player_pass.empty:
         # add legend for annotations
         h, _ = ax.get_legend_handles_labels()
         annotate = annotations[-1]
@@ -201,8 +255,8 @@ def plot_pass_map(df_player_pass, df_location, team_name, metric, period_start, 
         ax.legend(handles = h + [annotate], 
                   handler_map={type(annotate) : AnnotationHandler(5)}, 
                   loc=3, bbox_to_anchor=(0, -0.05))
-        
-        st.pyplot(fig, use_container_width=True)
+    
+    st.pyplot(fig, use_container_width=True)
 
 def plot_pass_heatmap(df):
 	fig, ax = plt.subplots(figsize=(9, 6))
