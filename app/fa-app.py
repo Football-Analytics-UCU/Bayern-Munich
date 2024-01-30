@@ -1,8 +1,10 @@
+import warnings
+warnings.filterwarnings('ignore')
+
 import streamlit as st
 import pandas as pd
-from helper_passes import (get_passes_data, filter_passes_data, get_passes_player_data, create_substitution_data,
-    plot_pass_map, plot_pass_heatmap)
 
+from helper_passes import (get_passes_data, filter_passes_data, get_passes_player_data, create_pass_heatmap, plot_hulls, create_substitution_data, plot_pass_map, plot_pass_heatmap)
 
 st.set_page_config(page_title='bayern-project', layout="wide")
 
@@ -14,8 +16,13 @@ df_lineups = pd.read_pickle(path_data_lineups)
 df_substitution = df_events[df_events['substitution_replacement'].notna()]\
     [['player', 'substitution_replacement', 'minute', 'substitution_outcome']]
 
+ev = df_events[['minute', 'second', 'team', 'location', 'type', 'player', 'pass_end_location', 'pass_outcome']]
+ev_ukr = ev[ev['team'] == 'Ukraine']
+ev_nth = ev[ev['team'] != 'Ukraine']
 
-# init configurations
+lineups_ukr = df_lineups[df_lineups['country'] == 'Ukraine']
+lineups_nth = df_lineups[df_lineups['country'] == 'Netherlands']
+
 config_color_dict = {0: {'cmap': 'Oranges', 'color': 'orange'}, 1: {'cmap': 'Blues', 'color': 'dodgerblue'}}
 minute_init = [{'minute': -1, 'period': 1, 'timestamp': '00:00:00.000', 'type': 'Game Start'}]
 minute_last = [{'minute': 95, 'period': 2, 'timestamp': '90:00:00.000', 'type': 'Game Over'}]
@@ -39,6 +46,24 @@ with tab2:
         columns='pass_recipient', 
         aggfunc='count'
     )
+
+    _, col01, _ = st.columns((0.2, 1, 0.2))
+    with col01:
+        plot_hulls(ev_ukr, lineups_ukr, 'Ukraine', main_color='dodgerblue')
+
+    _, col01, _ = st.columns((0.2, 1, 0.2))
+    with col01:
+        plot_hulls(ev_nth, lineups_nth, 'Netherlands', main_color='orange')
+    
+    _, col01, _ = st.columns((0.2, 1, 0.2))
+    with col01:
+        sel_clusters = st.slider('Number of clusters:', min_value=10, max_value=150, value=90, step=1)
+    col01, col02 = st.columns((1, 1))
+    
+    with col01:
+        create_pass_heatmap(ev_ukr, 'Ukraine', sel_clusters)
+    with col02:
+        create_pass_heatmap(ev_nth, 'Netherlands', sel_clusters)
 
     _, col02 = st.columns((1, 1))
     with col02:
@@ -171,7 +196,7 @@ with tab4:
                     'max_passes_direction': df_player_pass['passes'].max() if not df_player_pass.empty else 0,
                     'min_passes_direction': df_player_pass['passes'].min() if not df_player_pass.empty else 0,
                     },
-                'period_start': period_start, 
+                'period_start': period_start,
                 'period_end': period_end,
                 'color': config_color_dict[idx_team]['color'],
                 'cmap': config_color_dict[idx_team]['cmap'],
