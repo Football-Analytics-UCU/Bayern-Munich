@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from tabs.general import create_general_tab
 
 import os
 
@@ -17,16 +18,19 @@ df_events = pd.read_csv(path_data_events)
 
 _, col01, _ = st.columns((1, 1, 1))
 with col01:
-    st.title('Netherlands 3-2 Ukraine')
+	st.title('Netherlands 3-2 Ukraine')
 
-tab1, tab2, tab3 = st.tabs(["General", "Pass", "Goal"])
+tab0, tab1, tab2, tab3 = st.tabs(["Main", "General", "Pass", "Goal"])
+
+with tab0:
+	create_general_tab()
 
 with tab1:
-    st.write(df_events.head(10))
+	st.write(df_events.head(10))
 
 with tab2:
 
-	df_pass = df_events[df_events['team']=='Ukraine'].pivot_table(
+	df_pass = df_events[df_events['team'] == 'Ukraine'].pivot_table(
 	    values='id', 
 	    index='player', 
 	    columns='pass_recipient', 
@@ -38,4 +42,4 @@ with tab2:
 		plot_heatmap(df_pass)
 
 with tab3:
-    pass
+	pass
