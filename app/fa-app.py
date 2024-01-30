@@ -5,6 +5,7 @@ import streamlit as st
 import pandas as pd
 
 from helper_passes import (get_passes_data, filter_passes_data, get_passes_player_data, create_pass_heatmap, plot_hulls, create_substitution_data, plot_pass_map, plot_pass_heatmap)
+import rp_plot_functions
 
 st.set_page_config(page_title='bayern-project', layout="wide")
 
@@ -228,7 +229,50 @@ with tab4:
                 )
 
 with tab5:
-    pass
+    st.title('Overview of corner events in our data')
+    #1
+    st.text('The player who get the ball out of bounds: Stefan de Vrij. Method: Clearance')
+    IDS = ['bf6c9261-840b-4d8f-b7bd-9daa23b5b457']
+    FF = ['corner']
+    rp_plot_functions.make_graph(IDS, FF, 'First corner pass')
+    #1 result
+    IDS = ['80110e08-410a-4928-9601-3d2f0694589f'] 
+    FF = ['freeze']
+    rp_plot_functions.make_graph(IDS, FF, 'Result: Off target shot')
+    #2
+    st.text('The player who get the ball out of bounds: Heorhii Bushchan. Method: Goalkeeper saves')
+    IDS = ['49f48dc3-8bf0-41c8-af49-ab4ec4b164ee']
+    FF = ['corner']
+    rp_plot_functions.make_graph(IDS, FF, 'Second corner pass')
+    #3
+    st.text('The player who get the ball out of bounds: Mykola Matviyenko. Method: Clearance')
+    IDS = ['022d0dc4-9779-4224-9533-ef690e560907']
+    FF = ['corner']
+    rp_plot_functions.make_graph(IDS, FF, 'Third corner pass')
+    #3 result
+    IDS = ['9f9d09f9-c091-4c58-b7f0-873df2649cbd', '022d0dc4-9779-4224-9533-ef690e560907']
+    FF = ['freeze']
+    rp_plot_functions.make_graph(IDS, FF, 'Result: Off target shot')
+    #4
+    st.text('The player who get the ball out of bounds: Illia Zabarnyi. Method: Clearance')
+    IDS = ['cfafc900-4c4d-49d5-b11c-8a3e0390eeca', '7545d8df-3938-4662-b1e0-cf45bb49b338']
+    FF = ['solo', 'corner']
+    rp_plot_functions.make_graph(IDS, FF, 'Fourth corner pass')
+    #5
+    st.text('The player who get the ball out of bounds: Oleksandr Karavaev. Method: Interception')
+    IDS = ['9b62f73f-60d0-4cf2-bef1-7aeee121f6af', 'ee9667f9-4f49-4c61-890a-91685aef779b']
+    FF = ['solo', 'corner']
+    rp_plot_functions.make_graph(IDS, FF, 'Fifth corner pass')
+    #6
+    st.text('The player who get the ball out of bounds: Vitalii Mykolenko. Method: Duel')
+    IDS = ['39755e7b-b68e-46f4-9fd9-07ac6b41ef2c']
+    FF = ['corner']
+    rp_plot_functions.make_graph(IDS, FF, 'Sixth corner pass')
+    # Mean corner
+    st.title('Mean num. of corner events in groups')
+    values = [12.0, 6.5, 8.666666666666666, 9.166666666666666, 9.666666666666666, 5.833333333333333, 8.375, 14.25, 9.0, 8.0]
+    v_names = ['A', 'B', 'C', 'D', 'E', 'F', 'Round of 16', 'Quarter-finals', 'Semi-finals', 'Final']
+    rp_plot_functions.make_chart_bart(values, v_names, 2)
 
 
 with tab6:
