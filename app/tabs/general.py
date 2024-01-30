@@ -38,21 +38,7 @@ def get_binary_chart(nth, ukr, title, format="%"):
     return fig
 
 
-def create_general_tab():
-
-    table_markdown = """
-    <table cellspacing="0" cellpadding="0" style="border:none;" width="100%">
-        <tr><td>Netherlands</td> <td>Ukraine</td> </tr>
-        <tr><td>Possession: 51%</td> <td>Possession: 49%</td> </tr>
-        <tr><td>Goals: </td> <td>Goals: </td> </tr>
-
-    </table>
-    """
-
-    #st.markdown(table_markdown, unsafe_allow_html=True)
-
-
-
+def create_general_tab(df_events):
 
     st.title("Performance")
 

@@ -19,8 +19,7 @@ with col01:
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["General", "Passes", "Goals", "Corners", "Throw-in", "About"])
 
 with tab1:
-	st.write(df_events.tail(10))
-    create_general_tab()
+    create_general_tab(df_events)
 
 with tab2:
     _, col020, _ = st.columns((1, 1, 1))
