@@ -19,7 +19,8 @@ def get_binary_chart(nth, ukr, title, format="%"):
 
     if is_zero:
         format = 'Z'
-        ax = pd.DataFrame({'a': [1, 0.004, 1]}).T.plot.barh(stacked=True, figsize=(10, 1), color=['lightgray', 'white', 'lightgray'])
+        ax = pd.DataFrame({'a': [1, 0.004, 1]}).T.plot.barh(stacked=True, figsize=(10, 1),
+                                                            color=['lightgray', 'white', 'lightgray'])
     else:
         ax = pd.DataFrame({'a': [nth, ukr]}).T.plot.barh(stacked=True, figsize=(10, 1), color=['orange', 'dodgerblue'])
     ax.legend().set_visible(False)
@@ -35,7 +36,9 @@ def get_binary_chart(nth, ukr, title, format="%"):
             ax.bar_label(
                 c,
                 label_type='center',
-                labels=[{'%': f'{cc:.1%} - {lb}', 'N': f'{cc:.0f} - {lb}', 'F': f'{cc:.2f} - {lb}', 'Z': f'0 - {lb}'}[format] for cc in c.datavalues],
+                labels=[
+                    {'%': f'{cc:.1%} - {lb}', 'N': f'{cc:.0f} - {lb}', 'F': f'{cc:.2f} - {lb}', 'Z': f'0 - {lb}'}[
+                        format] for cc in c.datavalues],
                 color='white'
             )
 
@@ -46,11 +49,32 @@ def get_binary_chart(nth, ukr, title, format="%"):
     return fig
 
 
+def get_cards(df_events):
+
+    foul_committed_card = df_events.pivot_table(
+        values=['id'],
+        index=['team'],
+        columns=['foul_committed_card'],
+        aggfunc='count', fill_value=0
+    )
+
+    foul_committed_card.columns = foul_committed_card.columns.droplevel()
+    for c in ['Red Card', 'Yellow Card']:
+        if c not in foul_committed_card.columns:
+            foul_committed_card[c] = 0
+
+    return foul_committed_card
+
+
 def get_data(df_events):
-    res_df = df_events.groupby('team').agg({'possession': "sum"}).rename(columns={'possession': 'Possession'})
+    RENAME = {'possession': 'Possession', 'Red Card': 'Red cards', 'Yellow Card': 'Yellow cards'}
 
-    return res_df
+    res_df = df_events.groupby('team').agg({'possession': "sum"})
+    foul_committed_card = get_cards(df_events)
+    res_df = pd.concat([res_df, foul_committed_card], axis=1).fillna(0)
 
+
+    return res_df.rename(columns=RENAME)
 
 
 def create_general_tab(df_events):
@@ -124,9 +148,9 @@ def create_general_tab(df_events):
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            st.pyplot(get_binary_chart(0, 1, "Yellow cards", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Yellow cards", format='N'))
         with col2:
-            st.pyplot(get_binary_chart(0, 0, "Red cards", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Red cards", format='N'))
 
     with st.container():
         col1, col2 = st.columns(2)
