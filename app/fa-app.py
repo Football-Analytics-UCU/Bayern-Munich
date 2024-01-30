@@ -4,7 +4,7 @@ warnings.filterwarnings('ignore')
 import streamlit as st
 import pandas as pd
 
-from helper_passes import get_passes_data, filter_passes_data, plot_pass_map, create_pass_heatmap, plot_hulls
+from helper_passes import get_passes_data, filter_passes_data, plot_pass_map, create_pass_heatmap, plot_hulls, plot_pass_heatmap
 
 st.set_page_config(page_title='bayern-project', layout="wide")
 
@@ -123,6 +123,10 @@ with tab2:
         create_pass_heatmap(ev_ukr, 'Ukraine', sel_clusters)
     with col02:
         create_pass_heatmap(ev_nth, 'Netherlands', sel_clusters)
+
+    with col02:
+        pass
+        # plot_pass_heatmap(df_pass)
 
 
 with tab3:
