@@ -5,19 +5,8 @@ import streamlit as st
 import pandas as pd
 
 from helper_passes import get_passes_data, filter_passes_data, plot_pass_map, create_pass_heatmap, plot_hulls
-from mplsoccer.pitch import Pitch, VerticalPitch
-import matplotlib.pyplot as plt
-from statsbombpy import sb
-import numpy as np
-import seaborn as sns
-
-from mplsoccer import Sbopen
-from matplotlib.patches import Arc
 
 st.set_page_config(page_title='bayern-project', layout="wide")
-
-# path_data_events = "app/data/events.csv"
-# df_ev = pd.read_csv(path_data_events)
 
 path_data_events = "app/data/events.pkl"
 df_events = pd.read_pickle(path_data_events)
@@ -27,8 +16,12 @@ ev_ukr = ev[ev['team'] == 'Ukraine']
 ev_nth = ev[ev['team'] != 'Ukraine']
 
 event_id = 3788746
-lineups_nth = sb.lineups(match_id=event_id)["Netherlands"]
-lineups_ukr = sb.lineups(match_id=event_id)["Ukraine"]
+
+lineups_path = 'app/data/lineups.pkl'
+
+lineups = pd.read_pickle(lineups_path)
+lineups_ukr = lineups[lineups['country'] == 'Ukraine']
+lineups_nth = lineups[lineups['country'] == 'Netherlands']
 
 _, col01, _ = st.columns((1, 1, 1))
 with col01:
