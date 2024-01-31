@@ -9,4 +9,4 @@
 - Sarana Maksym - Tab General, @Polosot
 - Bondarenko Olena - Tab Goals, @olena-bond
 - Yura Yelisieiev - Tab Passes, @YuraYelisieiev
-- Ivanov Roman - Tab Corners, @pingmar
+- Petrov Roman - Tab Corners, @pingmar
