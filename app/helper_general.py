@@ -1,5 +1,8 @@
 import streamlit as st
 import pandas as pd
+from mplsoccer.pitch import Pitch
+import ast
+import matplotlib.pyplot as plt
 
 
 def get_binary_chart_wrapper(data, title, *args, **kwargs):
@@ -49,30 +52,106 @@ def get_binary_chart(nth, ukr, title, format="%"):
     return fig
 
 
-def get_cards(df_events):
+def draw_field(df_events, command1, command2):
+    def plot_players(pitch, lineup, color, command, opposite=False, omit_players=0):
+        COORDS = {
+            'Goalkeeper': (5, 50),
+            'Center Attacking Midfield': (37, 50),
+            'Center Back': (17, 50),
+            'Center Defensive Midfield': (32, 50),
+            'Center Forward': (46, 50),
+            'Left Back': (17, 83),
+            'Left Center Back': (17, 67),
+            'Left Center Forward': (45, 77),
+            'Left Center Midfield': (32, 83),
+            'Left Defensive Midfield': (32, 67),
+            'Left Wing': (41, 17),
+            'Left Wing Back': (23, 85),
+            'Right Back': (17, 17),
+            'Right Center Back': (17, 33),
+            'Right Center Forward': (45, 23),
+            'Right Center Midfield': (32, 17),
+            'Right Defensive Midfield': (32, 33),
+            'Right Wing': (41, 83),
+            'Right Wing Back': (23, 15)
+        }
 
-    foul_committed_card = df_events.pivot_table(
+        lineup_coords = [COORDS[x['position']['name']] for x in lineup]
+        lineup_labels = [x['player']['name'] for x in lineup]
+
+        for xy, t, lb in zip(lineup_coords, [str(x['jersey_number']) for x in lineup], lineup_labels):
+            pitch.scatter(100 - xy[0] if opposite else xy[0], xy[1], s=300, c=color, label=f"{t} {lb}", ax=ax)
+            pitch.annotate(
+                xy=(100 - xy[0] - 0.15 - len(t) * 0.3 if opposite else xy[0] - 0.15 - len(t) * 0.3, xy[1] - 0.7),
+                text=t, ax=ax)
+
+        h, l = ax.get_legend_handles_labels()
+        plt.rcParams['legend.title_fontsize'] = 20
+        legend = plt.legend(h[omit_players:],
+                            l[omit_players:],
+                            title=r"$\bf{" + command + "}$", edgecolor='#22312b',
+                            facecolor='#22312b', labelcolor='#edede9', fontsize=15,
+                            loc='upper right' if opposite else 'upper left',
+                            bbox_to_anchor=(1.38, 1) if opposite else (-0.38, 1),
+                            borderaxespad=0.8
+                            )
+        legend.get_title().set_color('#edede9')
+        ax.add_artist(legend)
+
+    lineup = df_events.iloc[0:2, :].loc[:, ['team', 'tactics']].set_index('team').to_dict()['tactics']
+
+    print("AAA:", lineup)
+
+    #lineup = {k: ast.literal_eval(v) for k, v in lineup.items()}
+
+    pitch = Pitch(pitch_type='opta', pitch_color='forestgreen', line_color='#c7d5cc')
+    fig, ax = pitch.draw(figsize=(16, 10), constrained_layout=True, tight_layout=False)
+    fig.set_facecolor('#22312b')
+
+    plt.subplots_adjust(right=1.4, left=1.4, top=1.4)
+
+    plot_players(pitch, lineup[command1]['lineup'], 'orange', opposite=False, command=command1)
+    plot_players(pitch, lineup[command2]['lineup'], 'dodgerblue', opposite=True, command=command2,
+                 omit_players=len(lineup[command1]['lineup']))
+
+    ax.set_title(
+        f'{command1} ({"-".join(str(lineup[command1]["formation"]))}) vs {command2} ({"-".join(str(lineup[command2]["formation"]))})',
+        fontsize=25, color='#edede9')
+
+    return fig
+
+
+def get_column_values(df_events, column, mapping):
+
+    grouped_df = df_events.pivot_table(
         values=['id'],
         index=['team'],
-        columns=['foul_committed_card'],
+        columns=[column],
         aggfunc='count', fill_value=0
     )
+    grouped_df.columns = grouped_df.columns.droplevel()
 
-    foul_committed_card.columns = foul_committed_card.columns.droplevel()
-    for c in ['Red Card', 'Yellow Card']:
-        if c not in foul_committed_card.columns:
-            foul_committed_card[c] = 0
+    for c in mapping:
+        if c not in grouped_df.columns:
+            grouped_df[c] = 0
 
-    return foul_committed_card
+    return grouped_df[list(mapping)].rename(columns=mapping)
 
 
 def get_data(df_events):
-    RENAME = {'possession': 'Possession', 'Red Card': 'Red cards', 'Yellow Card': 'Yellow cards'}
+    RENAME = {'possession': 'Possession'}
 
     res_df = df_events.groupby('team').agg({'possession': "sum"})
-    foul_committed_card = get_cards(df_events)
-    res_df = pd.concat([res_df, foul_committed_card], axis=1).fillna(0)
 
+    foul_committed_card = get_column_values(
+        df_events, 'foul_committed_card', mapping={'Red Card': 'Red cards', 'Yellow Card': 'Yellow cards'}
+    )
+
+    event_types = get_column_values(
+        df_events, 'type', mapping={'Pass': 'Passes attempted'}
+    )
+
+    res_df = pd.concat([res_df, foul_committed_card, event_types], axis=1).fillna(0)
 
     return res_df.rename(columns=RENAME)
 
@@ -81,6 +160,10 @@ def create_general_tab(df_events):
 
     data = get_data(df_events)
 
+    st.title("Lineup")
+
+    st.pyplot(draw_field(df_events, "Netherlands", "Ukraine"))
+
     st.title("Performance")
 
     with st.container():
@@ -88,7 +171,7 @@ def create_general_tab(df_events):
         with col1:
             st.pyplot(get_binary_chart_wrapper(data, "Possession", format='%'))
         with col2:
-            st.pyplot(get_binary_chart(688, 424, "Passes attempted", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Passes attempted", format='N'))
 
     with st.container():
         col1, col2 = st.columns(2)
