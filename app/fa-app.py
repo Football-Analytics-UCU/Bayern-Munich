@@ -4,8 +4,7 @@ warnings.filterwarnings('ignore')
 import streamlit as st
 import pandas as pd
 
-from helper_passes import (get_passes_data, filter_passes_data, get_passes_player_data, create_pass_heatmap, 
-    plot_hulls, create_substitution_data, plot_pass_map, plot_pass_heatmap)
+from helper_passes import (get_passes_data, filter_passes_data, get_passes_player_data, create_pass_heatmap, plot_hulls, create_substitution_data, plot_pass_map, plot_pass_heatmap)
 from helper_general import create_general_tab
 from helper_goals import (get_shots_data, get_freeze, plot_all_shots, plot_shot_analysis)
 import helper_corners
