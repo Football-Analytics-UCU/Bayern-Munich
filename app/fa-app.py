@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from helper_passes import (get_passes_data, filter_passes_data, get_passes_player_data, create_substitution_data,
     plot_pass_map, plot_pass_heatmap)
+from goal_plot import (get_shots_data, get_freeze, plot_all_shots, plot_shot_analysis)
 
 
 st.set_page_config(page_title='bayern-project', layout="wide")
@@ -203,7 +204,28 @@ with tab4:
                 )
 
 with tab5:
-    pass
+    
+    df_shots = get_shots_data(df_events)
+    
+    _,col501,_ = st.columns((0.3, 1, 0.3))    
+    with col501:
+        plot_all_shots(df_shots)
+        
+    _,col502,_ = st.columns((0.1, 1, 0.1))
+    with col502:
+        df_freeze = get_freeze(df_events)
+        CHOICES = {"3fa18312-38f2-41d9-b94d-5133d515dc14": "51\'", "4d7ddff8-b418-43aa-a819-4e4a3b77ba61": "57\'",
+                  "91ccf9e2-8bd5-46e2-81cc-339cc5363854": "74\'", "f4973ccd-bee9-4e64-9750-1e2191f436d4": "78\'",
+                  "58013bf7-0a88-4a08-a1ad-ad90dd1ea68d": "84\'"}
+        st.markdown('### Goal plot')
+        input_select = st.selectbox('Select goal minute',
+                             CHOICES.keys(),
+                             format_func=lambda x:CHOICES[ x ],
+                             key='min')
+        
+        plot_shot_analysis(input_select, df_freeze, df_shots, df_lineups)
+    
+    
 
 
 with tab6:
@@ -220,4 +242,5 @@ with tab8:
     st.markdown("""
         - [Match Video](https://www.tokyvideo.com/video/netherlands-3-2-ukraine-full-match-euro-2020-group-stage-13-6-2021)
         - [Match Report: FBREF](https://fbref.com/en/matches/0e9919a5/Netherlands-Ukraine-June-13-2021-European-Championship)
+        - [Goal Plot : mplsoccer](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_plots/plot_shot_freeze_frame.html#sphx-glr-gallery-pitch-plots-plot-shot-freeze-frame-py)
         """)
