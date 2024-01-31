@@ -16,12 +16,16 @@ df_lineups = pd.read_pickle(path_data_lineups)
 df_substitution = df_events[df_events['substitution_replacement'].notna()]\
     [['player', 'substitution_replacement', 'minute', 'substitution_outcome']]
 
-ev = df_events[['minute', 'second', 'team', 'location', 'type', 'player', 'pass_end_location', 'pass_outcome']]
-ev_ukr = ev[ev['team'] == 'Ukraine']
-ev_nth = ev[ev['team'] != 'Ukraine']
+ev = df_events[
+    (df_events['player'].notna())&
+    (df_events['type'] == 'Pass')
+    ][['minute', 'second', 'team', 'location', 'type', 'player', 'pass_end_location', 'pass_outcome']].copy()
 
-lineups_ukr = df_lineups[df_lineups['country'] == 'Ukraine']
-lineups_nth = df_lineups[df_lineups['country'] == 'Netherlands']
+ev_ukr = ev[(ev['team'] == 'Ukraine')].copy().reset_index(drop=True)
+ev_nth = ev[(ev['team'] != 'Ukraine')].copy().reset_index(drop=True)
+
+lineups_ukr = df_lineups[df_lineups['country'] == 'Ukraine'].copy()
+lineups_nth = df_lineups[df_lineups['country'] == 'Netherlands'].copy()
 
 config_color_dict = {0: {'cmap': 'Oranges', 'color': 'orange'}, 1: {'cmap': 'Blues', 'color': 'dodgerblue'}}
 minute_init = [{'minute': -1, 'period': 1, 'timestamp': '00:00:00.000', 'type': 'Game Start'}]
@@ -47,27 +51,19 @@ with tab2:
         aggfunc='count'
     )
 
-    _, col01, _ = st.columns((0.2, 1, 0.2))
-    with col01:
-        plot_hulls(ev_ukr, lineups_ukr, 'Ukraine', main_color='dodgerblue')
+    _, col201, _ = st.columns((0.1, 1, 0.1))
+    with col201:
+        st.markdown("### :orange[Netherlands] players Convex Hulls")
+        plot_hulls(ev_nth, lineups_nth, main_color='orange')
+        st.markdown("### :blue[Ukraine] players Convex Hulls")
+        plot_hulls(ev_ukr, lineups_ukr, main_color='dodgerblue')
 
-    _, col01, _ = st.columns((0.2, 1, 0.2))
-    with col01:
-        plot_hulls(ev_nth, lineups_nth, 'Netherlands', main_color='orange')
-    
-    _, col01, _ = st.columns((0.2, 1, 0.2))
-    with col01:
-        sel_clusters = st.slider('Number of clusters:', min_value=10, max_value=150, value=90, step=1)
-    col01, col02 = st.columns((1, 1))
-    
-    with col01:
-        create_pass_heatmap(ev_ukr, 'Ukraine', sel_clusters)
-    with col02:
-        create_pass_heatmap(ev_nth, 'Netherlands', sel_clusters)
-
-    _, col02 = st.columns((1, 1))
-    with col02:
-        plot_pass_heatmap(df_pass)
+        st.markdown("### Pass Clustering")
+        sel_clusters = st.slider('Number of clusters:', min_value=10, max_value=150, value=90, step=10)
+        st.markdown("### :orange[Netherlands]")
+        create_pass_heatmap(ev_nth, sel_clusters)
+        st.markdown("### :blue[Ukraine]")
+        create_pass_heatmap(ev_ukr, sel_clusters)
 
 
 with tab3:
