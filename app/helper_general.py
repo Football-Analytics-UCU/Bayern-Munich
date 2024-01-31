@@ -18,7 +18,7 @@ def get_binary_chart(nth, ukr, title, format="%"):
         nth /= total_sum
         ukr /= total_sum
 
-    st.header(title)
+    st.markdown(f"### {title}")
 
     if is_zero:
         format = 'Z'
@@ -80,9 +80,9 @@ def draw_field(df_events, command1, command2):
         lineup_labels = [x['player']['name'] for x in lineup]
 
         for xy, t, lb in zip(lineup_coords, [str(x['jersey_number']) for x in lineup], lineup_labels):
-            pitch.scatter(100 - xy[0] if opposite else xy[0], xy[1], s=300, c=color, label=f"{t} {lb}", ax=ax)
+            pitch.scatter(100 - xy[0] if opposite else xy[0], xy[1], s=1000, c=color, label=f"{t} {lb}", ax=ax)
             pitch.annotate(
-                xy=(100 - xy[0] - 0.15 - len(t) * 0.3 if opposite else xy[0] - 0.15 - len(t) * 0.3, xy[1] - 0.7),
+                xy=(100 - xy[0] - .5 - len(t) * 0.3 if opposite else xy[0] - .5 - len(t) * 0.3, xy[1]-1),
                 text=t, ax=ax)
 
         h, l = ax.get_legend_handles_labels()
@@ -92,8 +92,9 @@ def draw_field(df_events, command1, command2):
                             title=r"$\bf{" + command + "}$", edgecolor='#22312b',
                             facecolor='#22312b', labelcolor='#edede9', fontsize=15,
                             loc='upper right' if opposite else 'upper left',
-                            bbox_to_anchor=(1.38, 1) if opposite else (-0.38, 1),
-                            borderaxespad=0.8
+                            bbox_to_anchor=(1.325, 1) if opposite else (-0.375, 1),
+                            borderaxespad=0.8, 
+                            markerscale=0.25
                             )
         legend.get_title().set_color('#edede9')
         ax.add_artist(legend)
@@ -174,12 +175,10 @@ def create_general_tab(df_events):
 
     data = get_data(df_events)
 
-    st.title("Lineup")
-
+    st.markdown("## Lineup")
     st.pyplot(draw_field(df_events, "Netherlands", "Ukraine"))
 
-    st.title("Performance")
-
+    st.markdown("## Performance")
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
@@ -187,8 +186,7 @@ def create_general_tab(df_events):
         with col2:
             st.pyplot(get_binary_chart_wrapper(data, "Passes attempted", format='N'))
 
-    st.title("Attacking")
-
+    st.markdown("## Attacking")
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
@@ -215,8 +213,7 @@ def create_general_tab(df_events):
         with col1:
             st.pyplot(get_binary_chart_wrapper(data, "Smother", format='N'))
 
-    st.title("Duels")
-
+    st.markdown("## Duels")
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
@@ -224,8 +221,7 @@ def create_general_tab(df_events):
         with col2:
             st.pyplot(get_binary_chart_wrapper(data, "Tackles", format='N'))
 
-    st.title("Disciplinary")
-
+    st.markdown("## Disciplinary")
     with st.container():
         col1, col2 = st.columns(2)
         with col1:

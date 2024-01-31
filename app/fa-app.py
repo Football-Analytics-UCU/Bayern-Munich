@@ -4,10 +4,11 @@ warnings.filterwarnings('ignore')
 import streamlit as st
 import pandas as pd
 
-from helper_passes import (get_passes_data, filter_passes_data, get_passes_player_data, create_pass_heatmap, plot_hulls, create_substitution_data, plot_pass_map, plot_pass_heatmap)
+from helper_passes import (get_passes_data, filter_passes_data, get_passes_player_data, create_pass_heatmap, 
+    plot_hulls, create_substitution_data, plot_pass_map, plot_pass_heatmap)
 from helper_general import create_general_tab
-from goal_plot import (get_shots_data, get_freeze, plot_all_shots, plot_shot_analysis)
-import rp_plot_functions
+from helper_goals import (get_shots_data, get_freeze, plot_all_shots, plot_shot_analysis)
+import helper_corners
 
 st.set_page_config(page_title='bayern-project', layout="wide")
 
@@ -38,8 +39,8 @@ _, col01, _ = st.columns((1, 1, 1))
 with col01:
     st.title(':orange[Netherlands] 3-2 :blue[Ukraine]')
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
-    "General", "Passes", "Player Passing Network", "Team Passing Network", "Goals", "Corners", "Throw-in", "About"])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    "General", "Passes", "Player Passing Network", "Team Passing Network", "Goals", "Corners", "About"])
 
 
 with tab1:
@@ -225,85 +226,101 @@ with tab4:
                     cmap_name=config_dict[k][i]['cmap']
                 )
 
+
 with tab5:
-    
     df_shots = get_shots_data(df_events)
     
-    _,col501,_ = st.columns((0.3, 1, 0.3))    
+    _, col501, _ = st.columns((0.1, 1, 0.1))
     with col501:
+        st.markdown("## Total Shots")
         plot_all_shots(df_shots)
         
     _,col502,_ = st.columns((0.1, 1, 0.1))
     with col502:
         df_freeze = get_freeze(df_events)
-        CHOICES = {"3fa18312-38f2-41d9-b94d-5133d515dc14": "51\'", "4d7ddff8-b418-43aa-a819-4e4a3b77ba61": "57\'",
-                  "91ccf9e2-8bd5-46e2-81cc-339cc5363854": "74\'", "f4973ccd-bee9-4e64-9750-1e2191f436d4": "78\'",
-                  "58013bf7-0a88-4a08-a1ad-ad90dd1ea68d": "84\'"}
-        st.markdown('### Goal plot')
-        input_select = st.selectbox('Select goal minute',
-                             CHOICES.keys(),
-                             format_func=lambda x:CHOICES[ x ],
-                             key='min')
+        CHOICES = {
+            "3fa18312-38f2-41d9-b94d-5133d515dc14": "51\'",
+            "4d7ddff8-b418-43aa-a819-4e4a3b77ba61": "57\'",
+            "91ccf9e2-8bd5-46e2-81cc-339cc5363854": "74\'",
+            "f4973ccd-bee9-4e64-9750-1e2191f436d4": "78\'",
+            "58013bf7-0a88-4a08-a1ad-ad90dd1ea68d": "84\'"
+        }
+        st.markdown('## Goals')
+        input_select = st.selectbox('Select goal: ', CHOICES.keys(), index=2, format_func=lambda x: CHOICES[x], key=51)
         
         plot_shot_analysis(input_select, df_freeze, df_shots, df_lineups)
 
+
 with tab6:
-    st.title('Corner events in our data')
-    #1
-    st.text('The player who get the ball out of bounds: Stefan de Vrij. Method: Clearance')
-    IDS = ['bf6c9261-840b-4d8f-b7bd-9daa23b5b457']
-    FF = ['corner']
-    rp_plot_functions.make_graph(IDS, FF, 'First corner pass')
-    #1 result
-    IDS = ['80110e08-410a-4928-9601-3d2f0694589f'] 
-    FF = ['freeze']
-    rp_plot_functions.make_graph(IDS, FF, 'Result: Off target shot')
-    #2
-    st.text('The player who get the ball out of bounds: Heorhii Bushchan. Method: Goalkeeper saves')
-    IDS = ['49f48dc3-8bf0-41c8-af49-ab4ec4b164ee']
-    FF = ['corner']
-    rp_plot_functions.make_graph(IDS, FF, 'Second corner pass')
-    #3
-    st.text('The player who get the ball out of bounds: Mykola Matviyenko. Method: Clearance')
-    IDS = ['022d0dc4-9779-4224-9533-ef690e560907']
-    FF = ['corner']
-    rp_plot_functions.make_graph(IDS, FF, 'Third corner pass')
-    #3 result
-    IDS = ['9f9d09f9-c091-4c58-b7f0-873df2649cbd', '022d0dc4-9779-4224-9533-ef690e560907']
-    FF = ['freeze']
-    rp_plot_functions.make_graph(IDS, FF, 'Result: Off target shot')
-    #4
-    st.text('The player who get the ball out of bounds: Illia Zabarnyi. Method: Clearance')
-    IDS = ['cfafc900-4c4d-49d5-b11c-8a3e0390eeca', '7545d8df-3938-4662-b1e0-cf45bb49b338']
-    FF = ['solo', 'corner']
-    rp_plot_functions.make_graph(IDS, FF, 'Fourth corner pass')
-    #5
-    st.text('The player who get the ball out of bounds: Oleksandr Karavaev. Method: Interception')
-    IDS = ['9b62f73f-60d0-4cf2-bef1-7aeee121f6af', 'ee9667f9-4f49-4c61-890a-91685aef779b']
-    FF = ['solo', 'corner']
-    rp_plot_functions.make_graph(IDS, FF, 'Fifth corner pass')
-    #6
-    st.text('The player who get the ball out of bounds: Vitalii Mykolenko. Method: Duel')
-    IDS = ['39755e7b-b68e-46f4-9fd9-07ac6b41ef2c']
-    FF = ['corner']
-    rp_plot_functions.make_graph(IDS, FF, 'Sixth corner pass')
+    df_lineups_tab_6 = df_lineups[['player_id', 'jersey_number', 'country']].copy()
+
+    _, col701, _ = st.columns((0.25, 1, 0.25))
+    with col701:
+        #1
+        IDS = ['bf6c9261-840b-4d8f-b7bd-9daa23b5b457']
+        FF = ['corner']
+        helper_corners.make_graph(df_events, df_lineups_tab_6, IDS, FF, 'First corner')
+        st.text('The player who get the ball out of bounds: Stefan de Vrij. Method: Clearance')
+        #1 result
+        IDS = ['80110e08-410a-4928-9601-3d2f0694589f'] 
+        FF = ['freeze']
+        helper_corners.make_graph(df_events, df_lineups_tab_6, IDS, FF, 'Result: Off target shot')
+        #2
+        IDS = ['49f48dc3-8bf0-41c8-af49-ab4ec4b164ee']
+        FF = ['corner']
+        helper_corners.make_graph(df_events, df_lineups_tab_6, IDS, FF, 'Second corner')
+        st.text('The player who get the ball out of bounds: Heorhii Bushchan. Method: Goalkeeper saves')
+        #3
+        IDS = ['022d0dc4-9779-4224-9533-ef690e560907']
+        FF = ['corner']
+        helper_corners.make_graph(df_events, df_lineups_tab_6, IDS, FF, 'Third corner')
+        st.text('The player who get the ball out of bounds: Mykola Matviyenko. Method: Clearance')
+        #3 result
+        IDS = ['9f9d09f9-c091-4c58-b7f0-873df2649cbd', '022d0dc4-9779-4224-9533-ef690e560907']
+        FF = ['freeze']
+        helper_corners.make_graph(df_events, df_lineups_tab_6, IDS, FF, 'Result: Off target shot')
+        #4
+        IDS = ['cfafc900-4c4d-49d5-b11c-8a3e0390eeca', '7545d8df-3938-4662-b1e0-cf45bb49b338']
+        FF = ['solo', 'corner']
+        helper_corners.make_graph(df_events, df_lineups_tab_6, IDS, FF, 'Fourth corner')
+        st.text('The player who get the ball out of bounds: Illia Zabarnyi. Method: Clearance')
+        #5
+        IDS = ['9b62f73f-60d0-4cf2-bef1-7aeee121f6af', 'ee9667f9-4f49-4c61-890a-91685aef779b']
+        FF = ['solo', 'corner']
+        helper_corners.make_graph(df_events, df_lineups_tab_6, IDS, FF, 'Fifth corner')
+        st.text('The player who get the ball out of bounds: Oleksandr Karavaev. Method: Interception')
+        #6
+        IDS = ['39755e7b-b68e-46f4-9fd9-07ac6b41ef2c']
+        FF = ['corner']
+        helper_corners.make_graph(df_events, df_lineups_tab_6, IDS, FF, 'Sixth corner')
+        st.text('The player who get the ball out of bounds: Vitalii Mykolenko. Method: Duel')
+    
     # Mean corner
-    st.title('Mean num. of corner events in groups')
-    values = [12.0, 6.5, 8.666666666666666, 9.166666666666666, 9.666666666666666, 5.833333333333333, 8.375, 14.25, 9.0, 8.0]
-    v_names = ['A', 'B', 'C', 'D', 'E', 'F', 'Round of 16', 'Quarter-finals', 'Semi-finals', 'Final']
-    rp_plot_functions.make_chart_bart(values, v_names, 2)
+    _, col601, _ = st.columns((0.25, 1, 0.25))    
+    with col601:
+        st.markdown('## Tournament Corners')
+        values = [12.0, 6.5, 8.666666666666666, 9.166666666666666, 9.666666666666666, 5.833333333333333, 8.375, 14.25, 9.0, 8.0]
+        v_names = ['A', 'B', 'C', 'D', 'E', 'F', 'Round of 16', 'Quarter-finals', 'Semi-finals', 'Final']
+        helper_corners.make_chart_bart(values, v_names, 2)
 
 
 with tab7:
-    pass
-
-
-with tab8:
-    st.markdown('### Team')
-    st.markdown('### References')
+    st.markdown('#### Team Bayern')
     st.markdown("""
+        - Ivaniuk Petro - Passing Network Tabs, @PetroIvaniuk
+        - Sarana Maksym - Tab General, @Polosot
+        - Bondarenko Olena - Tab Goals, @olena-bond
+        - Yura Yelisieiev - Tab Passes, @YuraYelisieiev
+        - Ivanov Roman - Tab Corners, @pingmar
+        """)
+    st.markdown('#### References')
+    st.markdown("""
+        - [Data: Statsbomb](https://github.com/statsbomb/open-data)
         - [Match Video](https://www.tokyvideo.com/video/netherlands-3-2-ukraine-full-match-euro-2020-group-stage-13-6-2021)
         - [Match Report: FBREF](https://fbref.com/en/matches/0e9919a5/Netherlands-Ukraine-June-13-2021-European-Championship)
-        - [Goal Plot : mplsoccer](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_plots/plot_shot_freeze_frame.html#sphx-glr-gallery-pitch-plots-plot-shot-freeze-frame-py)
+        - [Mplsoccer](https://mplsoccer.readthedocs.io/en/latest/gallery/)
+        - [Goal Plot: Mplsoccer](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_plots/plot_shot_freeze_frame.html#sphx-glr-gallery-pitch-plots-plot-shot-freeze-frame-py)
+        - [Interactive Passing Networks](https://karun.in/blog/interactive-passing-networks.html)
+        - [Creating Passmaps in Python](https://sharmaabhishekk.github.io/projects/passmap)
         """)
  
