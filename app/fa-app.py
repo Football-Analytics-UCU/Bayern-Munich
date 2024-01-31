@@ -5,6 +5,7 @@ import streamlit as st
 import pandas as pd
 
 from helper_passes import (get_passes_data, filter_passes_data, get_passes_player_data, create_pass_heatmap, plot_hulls, create_substitution_data, plot_pass_map, plot_pass_heatmap)
+from helper_general import create_general_tab
 
 st.set_page_config(page_title='bayern-project', layout="wide")
 
@@ -40,8 +41,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
 
 
 with tab1:
-    st.write(df_lineups.tail(10))
-    st.write(df_events.tail(10))
+    create_general_tab(df_events)
 
 with tab2:
     df_pass = df_events[df_events['team']=='Ukraine'].pivot_table(
