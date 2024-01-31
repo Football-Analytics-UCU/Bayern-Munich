@@ -309,8 +309,8 @@ with tab7:
         - Ivaniuk Petro - Passing Network Tabs, @PetroIvaniuk
         - Sarana Maksym - Tab General, @Polosot
         - Bondarenko Olena - Tab Goals, @olena-bond
-        - Yura Yelisieiev - Tab Passes, @YuraYelisieiev
-        - Ivanov Roman - Tab Corners, @pingmar
+        - Yelisieiev Yura  - Tab Passes, @YuraYelisieiev
+        - Petrov Roman - Tab Corners, @pingmar
         """)
     st.markdown('#### References')
     st.markdown("""
