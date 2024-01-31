@@ -100,10 +100,6 @@ def draw_field(df_events, command1, command2):
 
     lineup = df_events.iloc[0:2, :].loc[:, ['team', 'tactics']].set_index('team').to_dict()['tactics']
 
-    print("AAA:", lineup)
-
-    #lineup = {k: ast.literal_eval(v) for k, v in lineup.items()}
-
     pitch = Pitch(pitch_type='opta', pitch_color='forestgreen', line_color='#c7d5cc')
     fig, ax = pitch.draw(figsize=(16, 10), constrained_layout=True, tight_layout=False)
     fig.set_facecolor('#22312b')
@@ -121,7 +117,7 @@ def draw_field(df_events, command1, command2):
     return fig
 
 
-def get_column_values(df_events, column, mapping):
+def get_column_values(df_events, column, mapping, reverse_index=False):
 
     grouped_df = df_events.pivot_table(
         values=['id'],
@@ -134,6 +130,12 @@ def get_column_values(df_events, column, mapping):
     for c in mapping:
         if c not in grouped_df.columns:
             grouped_df[c] = 0
+
+    if '_total_' in mapping:
+        grouped_df['_total_'] = grouped_df.sum(axis=1)
+
+    if reverse_index:
+        grouped_df.index = [{'Ukraine': 'Netherlands', 'Netherlands': 'Ukraine'}[i] for i in grouped_df.index]
 
     return grouped_df[list(mapping)].rename(columns=mapping)
 
@@ -148,10 +150,22 @@ def get_data(df_events):
     )
 
     event_types = get_column_values(
-        df_events, 'type', mapping={'Pass': 'Passes attempted'}
+        df_events, 'type', mapping={'Pass': 'Passes attempted', 'Foul Committed': 'Fouls committed'}
     )
 
-    res_df = pd.concat([res_df, foul_committed_card, event_types], axis=1).fillna(0)
+    goalkeeper_types = get_column_values(
+        df_events, 'goalkeeper_type', mapping={'Goal Conceded': 'Goals', '_total_': 'Total attempts',
+                                               'Collected': 'Collected', 'Keeper Sweeper': 'Keeper Sweeper',
+                                               'Shot Faced': 'Shot Faced', 'Shot Saved': 'Shot Saved',
+                                               'Smother': 'Smother'},
+        reverse_index=True
+    )
+
+    duel_types = get_column_values(
+        df_events, 'duel_type', mapping={'Aerial Lost': 'Aerial losts', 'Tackle': 'Tackles'}
+    )
+
+    res_df = pd.concat([res_df, foul_committed_card, event_types, goalkeeper_types, duel_types], axis=1).fillna(0)
 
     return res_df.rename(columns=RENAME)
 
@@ -173,58 +187,42 @@ def create_general_tab(df_events):
         with col2:
             st.pyplot(get_binary_chart_wrapper(data, "Passes attempted", format='N'))
 
-    with st.container():
-        col1, col2 = st.columns(2)
-        with col1:
-            st.pyplot(get_binary_chart(617, 360, "Passes completed", format='N'))
-        with col2:
-            st.pyplot(get_binary_chart(97.82, 99.39, "Distance covered (km)", format='F'))
-
     st.title("Attacking")
 
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            st.pyplot(get_binary_chart(3, 2, "Goals", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Goals", format='N'))
         with col2:
-            st.pyplot(get_binary_chart(15, 8, "Total attempts", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Total attempts", format='N'))
 
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            st.pyplot(get_binary_chart(7, 5, "Attempts on target", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Collected", format='N'))
         with col2:
-            st.pyplot(get_binary_chart(4, 2, "Attempts off target", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Keeper Sweeper", format='N'))
 
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            st.pyplot(get_binary_chart(4, 1, "Blocked", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Shot Faced", format='N'))
         with col2:
-            st.pyplot(get_binary_chart(0, 0, "WoodWork", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Shot Saved", format='N'))
 
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            st.pyplot(get_binary_chart(5, 1, "Corners taken", format='N'))
-        with col2:
-            st.pyplot(get_binary_chart(2, 1, "Offsides", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Smother", format='N'))
 
-    st.title("Defending")
+    st.title("Duels")
 
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            st.pyplot(get_binary_chart(43, 43, "Balls recovered", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Aerial losts", format='N'))
         with col2:
-            st.pyplot(get_binary_chart(7, 12, "Tackles", format='N'))
-
-    with st.container():
-        col1, col2 = st.columns(2)
-        with col1:
-            st.pyplot(get_binary_chart(1, 4, "Blocks", format='N'))
-        with col2:
-            st.pyplot(get_binary_chart(4, 15, "Clearances completed", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Tackles", format='N'))
 
     st.title("Disciplinary")
 
@@ -238,6 +236,4 @@ def create_general_tab(df_events):
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            st.pyplot(get_binary_chart(8, 8, "Fouls committed", format='N'))
-        #with col2:
-        #    st.pyplot(get_binary_chart(4, 15, "Clearances completed", format='N'))
+            st.pyplot(get_binary_chart_wrapper(data, "Fouls committed", format='N'))

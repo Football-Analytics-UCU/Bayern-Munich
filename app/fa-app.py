@@ -41,8 +41,6 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
 
 
 with tab1:
-    st.write(df_lineups.tail(10))
-    st.write(df_events.tail(10))
     create_general_tab(df_events)
 
 with tab2:
